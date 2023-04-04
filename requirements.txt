@@ -1,5 +1,7 @@
-git+https://github.com/huggingface/peft.git
-git+https://github.com/huggingface/transformers.git
 huggingface_hub
-accelerate==0.17.1
 bitsandbytes
+sentencepiece
+git+https://github.com/huggingface/transformers.git@7dcd8703ef904adc3ac19b47f769879221c33849
+accelerate>=0.16.0
+bitsandbytes
+sentencepiece
