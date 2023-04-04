@@ -26,13 +26,15 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # Load peft config for pre-trained checkpoint etc.
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model_id = "HuggingFaceH4/llama-se-rl-ed"
+model_id = "trl-lib/llama-se-rl-merged"
 if device == "cpu":
-    model = AutoModelForCausalLM.from_pretrained(model_id, low_cpu_mem_usage=True)
+    model = AutoModelForCausalLM.from_pretrained(model_id, low_cpu_mem_usage=True, use_auth_token=HF_TOKEN)
 else:
     # torch_dtype = torch.bfloat16 if torch.cuda.get_device_capability()[0] == 8 else torch.float16
     # model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch_dtype, device_map="auto")
-    model = AutoModelForCausalLM.from_pretrained(model_id, device_map="auto", load_in_8bit=True)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id, device_map="auto", load_in_8bit=True, use_auth_token=HF_TOKEN
+    )
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 
