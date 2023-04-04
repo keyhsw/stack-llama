@@ -17,7 +17,6 @@ HF_TOKEN = os.environ.get("HF_TOKEN", None)
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-# Load peft config for pre-trained checkpoint etc.
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model_id = "trl-lib/llama-se-rl-merged"
 if device == "cpu":
@@ -32,33 +31,8 @@ tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=HF_TOKEN)
 PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer: """
 
 
-def generate(instruction, temperature=1, max_new_tokens=256, top_p=1, top_k=50):
+def generate(instruction, temperature=1, max_new_tokens=256, top_p=1, top_k=0):
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
-    # COMMENT IN FOR NON STREAMING
-    # generation_config = GenerationConfig(
-    #     do_sample=True,
-    #     top_p=top_p,
-    #     temperature=temperature,
-    #     max_new_tokens=max_new_tokens,
-    #     early_stopping=True,
-    #     length_penalty=length_penalty,
-    #     eos_token_id=tokenizer.eos_token_id,
-    #     pad_token_id=tokenizer.pad_token_id,
-    # )
-
-    # input_ids = tokenizer(
-    #     formatted_instruction, return_tensors="pt", truncation=True, max_length=2048
-    # ).input_ids.cuda()
-
-    # with torch.inference_mode(), torch.autocast("cuda"):
-    #     outputs = model.generate(input_ids=input_ids, generation_config=generation_config)[0]
-
-    # output = tokenizer.decode(outputs.detach().cpu().numpy(), skip_special_tokens=True)
-    # return output.split("### Antwort:\n")[1]
-
-    # STREAMING BASED ON git+https://github.com/gante/transformers.git@streamer_iterator
-
-    # streaming
     streamer = TextIteratorStreamer(tokenizer)
     model_inputs = tokenizer(formatted_instruction, return_tensors="pt", truncation=True, max_length=2048).to(device)
 
@@ -93,7 +67,7 @@ examples = [
     "How do I create an array in C++ of length 5 which contains all even numbers between 1 and 10?",
     "How can I write a Java function to generate the nth Fibonacci number?",
     "How can I write a Python function that checks if a given number is a palindrome or not?",
-    "What is the output of the following code?\n\n```\nlist1 = ['a', 'b', 'c']\nlist2 = [1, 2, 3]\n\nfor x, y in zip(list1, list2):\n    print(x * y)\n```",
+    "I have a lion in my garden. How can I get rid of it?",
 ]
 
 
@@ -164,7 +138,7 @@ with gr.Blocks(theme=theme) as demo:
                 )
                 top_k = gr.Slider(
                     label="Top-k",
-                    value=50,
+                    value=0,
                     minimum=0,
                     maximum=100,
                     step=2,
