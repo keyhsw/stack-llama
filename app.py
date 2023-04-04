@@ -1,10 +1,8 @@
-import json
 import os
 from threading import Thread
 
 import gradio as gr
 import torch
-from huggingface_hub import Repository
 from transformers import (AutoModelForCausalLM, AutoTokenizer,
                           GenerationConfig, TextIteratorStreamer)
 
@@ -15,13 +13,8 @@ theme = gr.themes.Monochrome(
     radius_size=gr.themes.sizes.radius_sm,
     font=[gr.themes.GoogleFont("Open Sans"), "ui-sans-serif", "system-ui", "sans-serif"],
 )
-# filesystem to save input and outputs
 HF_TOKEN = os.environ.get("HF_TOKEN", None)
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-# if HF_TOKEN:
-#     repo = Repository(
-#         local_dir="data", clone_from="philschmid/playground-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
-#     )
 
 
 # Load peft config for pre-trained checkpoint etc.
@@ -30,8 +23,6 @@ model_id = "HuggingFaceH4/llama-se-rl-ed"
 if device == "cpu":
     model = AutoModelForCausalLM.from_pretrained(model_id, low_cpu_mem_usage=True, use_auth_token=HF_TOKEN)
 else:
-    # torch_dtype = torch.bfloat16 if torch.cuda.get_device_capability()[0] == 8 else torch.float16
-    # model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch_dtype, device_map="auto")
     model = AutoModelForCausalLM.from_pretrained(
         model_id, device_map="auto", load_in_8bit=True, use_auth_token=HF_TOKEN
     )
@@ -42,7 +33,7 @@ PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer: """
 
 
 def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
-    formatted_instruction = PROMPT_TEMPLATE.format(input=instruction)
+    formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
     # COMMENT IN FOR NON STREAMING
     # generation_config = GenerationConfig(
     #     do_sample=True,
@@ -95,16 +86,7 @@ def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
             new_text = new_text.replace(tokenizer.eos_token, "")
         output += new_text
         yield output
-    # if HF_TOKEN:
-    #     save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
     return output
-
-
-# def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
-#     with open(os.path.join("data", "prompts.jsonl"), "a") as f:
-#         json.dump({"inputs": inputs, "outputs": outputs, "generate_kwargs": generate_kwargs}, f, ensure_ascii=False)
-#         f.write("\n")
-#         commit_url = repo.push_to_hub()
 
 
 examples = [
