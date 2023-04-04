@@ -19,7 +19,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # Load peft config for pre-trained checkpoint etc.
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model_id = "HuggingFaceH4/llama-se-rl-ed"
+model_id = "trl-lib/llama-se-rl-merged"
 if device == "cpu":
     model = AutoModelForCausalLM.from_pretrained(model_id, low_cpu_mem_usage=True, use_auth_token=HF_TOKEN)
 else:
