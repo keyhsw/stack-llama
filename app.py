@@ -110,12 +110,15 @@ with gr.Blocks(theme=theme) as demo:
         with gr.Row():
             with gr.Column(scale=3):
                 instruction = gr.Textbox(placeholder="Enter your question here", label="Question")
-                output = gr.Textbox(
-                    interactive=False,
-                    lines=8,
-                    label="Answer",
-                    placeholder="Here will be the answer to your question",
-                )
+                with gr.Box():
+                    gr.Markdown("**Answer**")
+                    output = gr.Markdown()
+                # output = gr.Textbox(
+                #     interactive=False,
+                #     lines=8,
+                #     label="Answer",
+                #     placeholder="Here will be the answer to your question",
+                # )
                 submit = gr.Button("Generate", variant="primary")
                 gr.Examples(examples=examples, inputs=[instruction])
 
@@ -124,7 +127,7 @@ with gr.Blocks(theme=theme) as demo:
                     label="Temperature",
                     value=1.0,
                     minimum=0.0,
-                    maximum=1.0,
+                    maximum=2.0,
                     step=0.1,
                     interactive=True,
                     info="Higher values produce more diverse outputs",
@@ -140,7 +143,7 @@ with gr.Blocks(theme=theme) as demo:
                 )
                 top_p = gr.Slider(
                     label="Top-p (nucleus sampling)",
-                    value=0.9,
+                    value=1.0,
                     minimum=0.0,
                     maximum=1,
                     step=0.05,
