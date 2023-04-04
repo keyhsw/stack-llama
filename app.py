@@ -36,7 +36,7 @@ else:
         model_id, device_map="auto", load_in_8bit=True, use_auth_token=HF_TOKEN
     )
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=HF_TOKEN)
 
 PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer: """
 
@@ -108,18 +108,10 @@ def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
 
 
 examples = [
-    """Beantworten Sie die Frage am Ende des Textes anhand der folgenden Zusammenhänge. Wenn Sie die Antwort nicht wissen, sagen Sie, dass Sie es nicht wissen, versuchen Sie nicht, eine Antwort zu erfinden.
-"Das Unternehmen wurde 2016 von den französischen Unternehmern Clément Delangue, Julien Chaumond und Thomas Wolf gegründet und entwickelte ursprünglich eine Chatbot-App, die sich an Teenager richtete.[2] Nachdem das Modell hinter dem Chatbot offengelegt wurde, konzentrierte sich das Unternehmen auf eine Plattform für maschinelles Lernen.
-
-Im März 2021 sammelte Hugging Face in einer Serie-B-Finanzierungsrunde 40 Millionen US-Dollar ein[3].
-
-Am 28. April 2021 rief das Unternehmen in Zusammenarbeit mit mehreren anderen Forschungsgruppen den BigScience Research Workshop ins Leben, um ein offenes großes Sprachmodell zu veröffentlichen.[4] Im Jahr 2022 wurde der Workshop mit der Ankündigung von BLOOM abgeschlossen, einem mehrsprachigen großen Sprachmodell mit 176 Milliarden Parametern.[5]"
-
-Frage: Wann wurde Hugging Face gegründet?""",
-    "Erklären Sie, was eine API ist.",
-    "Bitte beantworten Sie die folgende Frage. Wer wird der nächste Ballon d'or sein?",
-    "Beantworten Sie die folgende Ja/Nein-Frage, indem Sie Schritt für Schritt argumentieren. Kannst du ein ganzes Haiku in einem einzigen Tweet schreiben?",
-    "Schreibe eine Produktbeschreibung für einen LG 43UQ75009LF 109 cm (43 Zoll) UHD Fernseher (Active HDR, 60 Hz, Smart TV) [Modelljahr 2022]",
+    "How do I create an array in C++ of length 5 which contains all even numbers between 1 and 10?",
+    "How can I write a Java function to generate the nth Fibonacci number?",
+    "How can I write a Python function that checks if a given number is a palindrome or not?",
+    "What is the output of the following code?\n\n```\nlist1 = ['a', 'b', 'c']\nlist2 = [1, 2, 3]\n\nfor x, y in zip(list1, list2):\n    print(x * y)\n```",
 ]
 
 
@@ -135,12 +127,12 @@ with gr.Blocks(theme=theme) as demo:
         )
         with gr.Row():
             with gr.Column(scale=3):
-                instruction = gr.Textbox(placeholder="Hier Anweisung eingeben...", label="Anweisung")
+                instruction = gr.Textbox(placeholder="Enter your question here", label="Question")
                 output = gr.Textbox(
                     interactive=False,
                     lines=8,
-                    label="Antwort",
-                    placeholder="Hier Antwort erscheint...",
+                    label="Answer",
+                    placeholder="Here will be the answer to your question",
                 )
                 submit = gr.Button("Generate", variant="primary")
                 gr.Examples(examples=examples, inputs=[instruction])
@@ -153,7 +145,7 @@ with gr.Blocks(theme=theme) as demo:
                     maximum=1.0,
                     step=0.1,
                     interactive=True,
-                    info="The higher more random",
+                    info="Higher values produce more diverse outputs",
                 )
                 max_new_tokens = gr.Slider(
                     label="Max new tokens",
@@ -165,13 +157,13 @@ with gr.Blocks(theme=theme) as demo:
                     info="The maximum numbers of new tokens",
                 )
                 top_p = gr.Slider(
-                    label="Top p",
+                    label="Top-p (nucleus sampling)",
                     value=0.9,
                     minimum=0.0,
                     maximum=1,
                     step=0.05,
                     interactive=True,
-                    info="probabilities that add up are kept",
+                    info="Higher values sample fewer low-probability tokens",
                 )
                 length_penalty = gr.Slider(
                     label="Length penalty",
@@ -180,7 +172,7 @@ with gr.Blocks(theme=theme) as demo:
                     maximum=10.0,
                     step=0.1,
                     interactive=True,
-                    info="> 0.0 longer, < 0.0 shorter",
+                    info="> 0 longer, < 0 shorter",
                 )
 
     submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, length_penalty], outputs=[output])
