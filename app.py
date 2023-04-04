@@ -66,7 +66,8 @@ def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
         top_p=top_p,
         temperature=temperature,
         max_new_tokens=max_new_tokens,
-        early_stopping=True,
+        # early_stopping=True, # Not sure if we want this
+        top_k=0,  # Maybe set top_k=40 if results are bad
         length_penalty=length_penalty,
         eos_token_id=tokenizer.eos_token_id,
         pad_token_id=tokenizer.eos_token_id,
@@ -97,6 +98,12 @@ examples = [
 ]
 
 
+def process_example(args):
+    for x in generate(args):
+        pass
+    return x
+
+
 with gr.Blocks(theme=theme) as demo:
     with gr.Column():
         gr.Markdown(
@@ -120,7 +127,13 @@ with gr.Blocks(theme=theme) as demo:
                 #     placeholder="Here will be the answer to your question",
                 # )
                 submit = gr.Button("Generate", variant="primary")
-                gr.Examples(examples=examples, inputs=[instruction])
+                gr.Examples(
+                    examples=examples,
+                    inputs=[instruction],
+                    cache_examples=True,
+                    fn=process_example,
+                    outputs=[output],
+                )
 
             with gr.Column(scale=1):
                 temperature = gr.Slider(
