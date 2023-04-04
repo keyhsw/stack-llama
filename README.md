@@ -1,6 +1,6 @@
 ---
-title: Igel Playground
-emoji: 🧠
+title: StackLLaMa
+emoji: 🦙
 colorFrom: red
 colorTo: yellow
 sdk: gradio
