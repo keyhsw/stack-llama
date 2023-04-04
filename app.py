@@ -32,7 +32,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=HF_TOKEN)
 PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer: """
 
 
-def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
+def generate(instruction, temperature=1, max_new_tokens=256, top_p=1, top_k=50):
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
     # COMMENT IN FOR NON STREAMING
     # generation_config = GenerationConfig(
@@ -66,9 +66,8 @@ def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
         top_p=top_p,
         temperature=temperature,
         max_new_tokens=max_new_tokens,
-        # early_stopping=True, # Not sure if we want this
-        top_k=0,  # Maybe set top_k=40 if results are bad
-        length_penalty=length_penalty,
+        do_sample=True,
+        top_k=top_k,
         eos_token_id=tokenizer.eos_token_id,
         pad_token_id=tokenizer.eos_token_id,
     )
@@ -163,20 +162,18 @@ with gr.Blocks(theme=theme) as demo:
                     interactive=True,
                     info="Higher values sample fewer low-probability tokens",
                 )
-                length_penalty = gr.Slider(
-                    label="Length penalty",
-                    value=1.0,
-                    minimum=-10.0,
-                    maximum=10.0,
-                    step=0.1,
+                top_k = gr.Slider(
+                    label="Top-k",
+                    value=50,
+                    minimum=0,
+                    maximum=100,
+                    step=2,
                     interactive=True,
-                    info="> 0 longer, < 0 shorter",
+                    info="Sample from top-k tokens",
                 )
 
-    submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, length_penalty], outputs=[output])
-    instruction.submit(
-        generate, inputs=[instruction, temperature, max_new_tokens, top_p, length_penalty], outputs=[output]
-    )
+    submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
+    instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
 
 demo.queue()
 demo.launch()
