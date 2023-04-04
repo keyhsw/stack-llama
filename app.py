@@ -1,10 +1,12 @@
-import os
-import gradio as gr
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, TextIteratorStreamer
-import torch
-from threading import Thread
-from huggingface_hub import Repository
 import json
+import os
+from threading import Thread
+
+import gradio as gr
+import torch
+from huggingface_hub import Repository
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          GenerationConfig, TextIteratorStreamer)
 
 theme = gr.themes.Monochrome(
     primary_hue="indigo",
@@ -16,15 +18,15 @@ theme = gr.themes.Monochrome(
 # filesystem to save input and outputs
 HF_TOKEN = os.environ.get("HF_TOKEN", None)
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-if HF_TOKEN:
-    repo = Repository(
-        local_dir="data", clone_from="philschmid/playground-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
-    )
+# if HF_TOKEN:
+#     repo = Repository(
+#         local_dir="data", clone_from="philschmid/playground-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
+#     )
 
 
 # Load peft config for pre-trained checkpoint etc.
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model_id = "philschmid/instruct-igel-001"
+model_id = "HuggingFaceH4/llama-se-rl-ed"
 if device == "cpu":
     model = AutoModelForCausalLM.from_pretrained(model_id, low_cpu_mem_usage=True)
 else:
@@ -34,11 +36,11 @@ else:
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-prompt_template = f"### Anweisung:\n{{input}}\n\n### Antwort:"
+PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer: """
 
 
 def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
-    formatted_instruction = prompt_template.format(input=instruction)
+    formatted_instruction = PROMPT_TEMPLATE.format(input=instruction)
     # COMMENT IN FOR NON STREAMING
     # generation_config = GenerationConfig(
     #     do_sample=True,
@@ -65,9 +67,7 @@ def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
 
     # streaming
     streamer = TextIteratorStreamer(tokenizer)
-    model_inputs = tokenizer(formatted_instruction, return_tensors="pt", truncation=True, max_length=2048)
-    # move to gpu
-    model_inputs = {k: v.to(device) for k, v in model_inputs.items()}
+    model_inputs = tokenizer(formatted_instruction, return_tensors="pt", truncation=True, max_length=2048).to(device)
 
     generate_kwargs = dict(
         top_p=top_p,
@@ -93,16 +93,16 @@ def generate(instruction, temperature, max_new_tokens, top_p, length_penalty):
             new_text = new_text.replace(tokenizer.eos_token, "")
         output += new_text
         yield output
-    if HF_TOKEN:
-        save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
+    # if HF_TOKEN:
+    #     save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
     return output
 
 
-def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
-    with open(os.path.join("data", "prompts.jsonl"), "a") as f:
-        json.dump({"inputs": inputs, "outputs": outputs, "generate_kwargs": generate_kwargs}, f, ensure_ascii=False)
-        f.write("\n")
-        commit_url = repo.push_to_hub()
+# def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
+#     with open(os.path.join("data", "prompts.jsonl"), "a") as f:
+#         json.dump({"inputs": inputs, "outputs": outputs, "generate_kwargs": generate_kwargs}, f, ensure_ascii=False)
+#         f.write("\n")
+#         commit_url = repo.push_to_hub()
 
 
 examples = [
@@ -124,12 +124,11 @@ Frage: Wann wurde Hugging Face gegründet?""",
 with gr.Blocks(theme=theme) as demo:
     with gr.Column():
         gr.Markdown(
-            """<h1><center>IGEL - Instruction-tuned German large Language Model for Text</center></h1>
-            <p>
-            IGEL is a LLM model family developed for the German language. The first version of IGEL is built on top <a href="https://bigscience.huggingface.co/blog/bloom" target="_blank">BigScience BLOOM</a> adapted to the <a href="https://huggingface.co/malteos/bloom-6b4-clp-german">German language by Malte Ostendorff</a>. IGEL designed to provide accurate and reliable language understanding capabilities for a wide range of natural language understanding tasks, including sentiment analysis, language translation, and question answering.
-            
-            The IGEL family includes instruction [instruct-igel-001](https://huggingface.co/philschmid/instruct-igel-001) and `chat-igel-001` _coming soon_.
-            </p>
+            """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
+
+            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of programming questions and answers from [Stack Overflow](https://stackoverflow.com) using Reinforcement Learning from Human Feedback (RLHF) with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our blog post [ADD LINK].
+
+            Type in the box below and click the button to generate answers to your most pressing coding questions 🔥!
       """
         )
         with gr.Row():
