@@ -2,14 +2,11 @@ import json
 import os
 
 import gradio as gr
-# import torch
-# from transformers import (AutoModelForCausalLM, AutoTokenizer,
-#                           TextIteratorStreamer, set_seed)
 from huggingface_hub import Repository
 from text_generation import Client
 
-# from threading import Thread
-
+HF_TOKEN = os.environ.get("HF_TOKEN", None)
+API_URL = os.environ.get("API_URL")
 
 
 theme = gr.themes.Monochrome(
@@ -19,29 +16,15 @@ theme = gr.themes.Monochrome(
     radius_size=gr.themes.sizes.radius_sm,
     font=[gr.themes.GoogleFont("Open Sans"), "ui-sans-serif", "system-ui", "sans-serif"],
 )
-HF_TOKEN = os.environ.get("HF_TOKEN", None)
-# os.environ["TOKENIZERS_PARALLELISM"] = "false"
 if HF_TOKEN:
     repo = Repository(
         local_dir="data", clone_from="trl-lib/stack-llama-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
     )
 
 client = Client(
-    "https://api-inference.huggingface.co/models/trl-lib/llama-se-rl-merged",
+    API_URL,
     headers={"Authorization": f"Bearer {HF_TOKEN}"},
 )
-
-# device = "cuda" if torch.cuda.is_available() else "cpu"
-# model_id = "trl-lib/llama-se-rl-merged"
-# print(f"Loading model: {model_id}")
-# if device == "cpu":
-#     model = AutoModelForCausalLM.from_pretrained(model_id, low_cpu_mem_usage=True, use_auth_token=HF_TOKEN)
-# else:
-#     model = AutoModelForCausalLM.from_pretrained(
-#         model_id, device_map="auto", load_in_8bit=True, use_auth_token=HF_TOKEN
-#     )
-
-# tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=HF_TOKEN)
 
 PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer:"""
 
@@ -93,26 +76,33 @@ def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
 
 
 def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k=100):
-    # set_seed(42)
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
 
     temperature = float(temperature)
     top_p = float(top_p)
 
-    stream = client.generate_stream(
-        formatted_instruction,
+    generate_kwargs = dict(
         temperature=temperature,
-        truncate=999,
         max_new_tokens=max_new_tokens,
         top_p=top_p,
         top_k=top_k,
-        # stop_sequences=["</s>"],
+        do_sample=True,
+        truncate=999,
+        seed=42,
+    )
+
+    stream = client.generate_stream(
+        formatted_instruction,
+        **generate_kwargs,
     )
 
     output = ""
     for response in stream:
         output += response.token.text
         yield output
+    if HF_TOKEN:
+        print("Pushing prompt and completion to the Hub")
+        save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
 
     return output
 
@@ -143,9 +133,9 @@ def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k
     #     #     new_text = new_text.replace(tokenizer.eos_token, "")
     #     output += new_text
     #     yield output
-    # if HF_TOKEN:
-    #     print("Pushing prompt and completion to the Hub")
-    #     save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
+    if HF_TOKEN:
+        print("Pushing prompt and completion to the Hub")
+        save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
     # return output
 
 
