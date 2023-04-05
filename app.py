@@ -80,7 +80,7 @@ def process_example(args):
     return x
 
 
-with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
+with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibility: hidden}") as demo:
     with gr.Column():
         gr.Markdown(
             """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
