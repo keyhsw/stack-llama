@@ -153,4 +153,4 @@ with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
 
 demo.queue(concurrency_count=1)
-demo.launch(enable_queue=True, share=True)
+demo.launch(enable_queue=True)
