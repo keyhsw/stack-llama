@@ -36,45 +36,6 @@ def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
         commit_url = repo.push_to_hub()
 
 
-# def generate(instruction, temperature=0.9, max_new_tokens=128, top_p=0.95, top_k=100):
-#     set_seed(42)
-#     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
-
-#     temperature = float(temperature)
-#     top_p = float(top_p)
-#     streamer = TextIteratorStreamer(tokenizer)
-#     model_inputs = tokenizer(formatted_instruction, return_tensors="pt", truncation=True, max_length=2048).to(device)
-
-#     generate_kwargs = dict(
-#         top_p=top_p,
-#         temperature=temperature,
-#         max_new_tokens=max_new_tokens,
-#         do_sample=True,
-#         top_k=top_k,
-#         eos_token_id=tokenizer.eos_token_id,
-#         pad_token_id=tokenizer.eos_token_id,
-#     )
-#     t = Thread(target=model.generate, kwargs={**dict(model_inputs, streamer=streamer), **generate_kwargs})
-#     t.start()
-
-#     output = ""
-#     hidden_output = ""
-#     for new_text in streamer:
-#         # skip streaming until new text is available
-#         if len(hidden_output) <= len(formatted_instruction):
-#             hidden_output += new_text
-#             continue
-#         # replace eos token
-#         # if tokenizer.eos_token in new_text:
-#         #     new_text = new_text.replace(tokenizer.eos_token, "")
-#         output += new_text
-#         yield output
-#     if HF_TOKEN:
-#         print("Pushing prompt and completion to the Hub")
-#         save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
-#     return output
-
-
 def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k=100):
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
 
@@ -105,38 +66,6 @@ def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k
         save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
 
     return output
-
-    # streamer = TextIteratorStreamer(tokenizer)
-    # model_inputs = tokenizer(formatted_instruction, return_tensors="pt", truncation=True, max_length=2048).to(device)
-
-    # generate_kwargs = dict(
-    #     top_p=top_p,
-    #     temperature=temperature,
-    #     max_new_tokens=max_new_tokens,
-    #     do_sample=True,
-    #     top_k=top_k,
-    #     # eos_token_id=tokenizer.eos_token_id,
-    #     # pad_token_id=tokenizer.eos_token_id,
-    # )
-    # t = Thread(target=model.generate, kwargs={**dict(model_inputs, streamer=streamer), **generate_kwargs})
-    # t.start()
-
-    # output = ""
-    # hidden_output = ""
-    # for new_text in streamer:
-    #     # skip streaming until new text is available
-    #     if len(hidden_output) <= len(formatted_instruction):
-    #         hidden_output += new_text
-    #         continue
-    #     # replace eos token
-    #     # if tokenizer.eos_token in new_text:
-    #     #     new_text = new_text.replace(tokenizer.eos_token, "")
-    #     output += new_text
-    #     yield output
-    if HF_TOKEN:
-        print("Pushing prompt and completion to the Hub")
-        save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
-    # return output
 
 
 examples = [
@@ -193,7 +122,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
                 )
                 max_new_tokens = gr.Slider(
                     label="Max new tokens",
-                    value=128,
+                    value=256,
                     minimum=0,
                     maximum=2048,
                     step=4,
