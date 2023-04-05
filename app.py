@@ -70,9 +70,7 @@ def generate(instruction, temperature=0.8, max_new_tokens=128, top_p=0.95, top_k
 examples = [
     "How do I create an array in C++ of length 5 which contains all even numbers between 1 and 10?",
     "How can I sort a list in Python?",
-    "How many helicopters can a human eat in one sitting?",
     "How can I write a Java function to generate the nth Fibonacci number?",
-    "There's a lion in my garden. How can I get rid of it?"
 ]
 
 
@@ -117,7 +115,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
                 temperature = gr.Slider(
                     label="Temperature",
                     value=0.8,
-                    minimum=0.0,
+                    minimum=0.01,
                     maximum=2.0,
                     step=0.1,
                     interactive=True,
@@ -155,4 +153,4 @@ with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
 
 demo.queue(concurrency_count=1)
-demo.launch(enable_queue=True, share=True)
+demo.launch(enable_queue=True)#, share=True)
