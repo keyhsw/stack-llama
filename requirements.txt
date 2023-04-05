@@ -1,7 +1,7 @@
 huggingface_hub
-bitsandbytes
-sentencepiece
-git+https://github.com/huggingface/transformers.git@98268b2e76189d65f7068625cf382ebe03b98480
-accelerate>=0.16.0
-bitsandbytes
-sentencepiece
+# bitsandbytes
+# sentencepiece
+# git+https://github.com/huggingface/transformers.git@98268b2e76189d65f7068625cf382ebe03b98480
+# accelerate>=0.16.0
+# bitsandbytes
+# sentencepiece
