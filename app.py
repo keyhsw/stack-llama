@@ -32,7 +32,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=HF_TOKEN)
 PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer:"""
 
 
-def generate(instruction, temperature=0.7, max_new_tokens=256, top_p=0.95, top_k=40):
+def generate(instruction, temperature=0.8, max_new_tokens=128, top_p=0.95, top_k=40):
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
 
     temperature = float(temperature)
@@ -69,8 +69,10 @@ def generate(instruction, temperature=0.7, max_new_tokens=256, top_p=0.95, top_k
 
 examples = [
     "How do I create an array in C++ of length 5 which contains all even numbers between 1 and 10?",
-    "How can I write a Java function to generate the nth Fibonacci number?",
     "How can I sort a list in Python?",
+    "How many helicopters can a human eat in one sitting?",
+    "How can I write a Java function to generate the nth Fibonacci number?",
+    "There's a lion in my garden. How can I get rid of it?"
 ]
 
 
@@ -85,7 +87,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
         gr.Markdown(
             """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
 
-            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of programming questions and answers from [Stack Overflow](https://stackoverflow.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our blog post [ADD LINK].
+            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of programming questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
 
             Type in the box below and click the button to generate answers to your most pressing coding questions 🔥!
       """
@@ -114,7 +116,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
             with gr.Column(scale=1):
                 temperature = gr.Slider(
                     label="Temperature",
-                    value=0.7,
+                    value=0.8,
                     minimum=0.0,
                     maximum=2.0,
                     step=0.1,
@@ -153,4 +155,4 @@ with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
 
 demo.queue(concurrency_count=1)
-demo.launch(enable_queue=True)
+demo.launch(enable_queue=True, share=True)
