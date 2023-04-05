@@ -19,6 +19,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model_id = "trl-lib/llama-se-rl-merged"
+print(f"Loading model: {model_id}")
 if device == "cpu":
     model = AutoModelForCausalLM.from_pretrained(model_id, low_cpu_mem_usage=True, use_auth_token=HF_TOKEN)
 else:
@@ -28,11 +29,14 @@ else:
 
 tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=HF_TOKEN)
 
-PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer: """
+PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer:"""
 
 
-def generate(instruction, temperature=1, max_new_tokens=256, top_p=1, top_k=0):
+def generate(instruction, temperature=0.7, max_new_tokens=256, top_p=0.95, top_k=40):
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
+
+    temperature = float(temperature)
+    top_p = float(top_p)
     streamer = TextIteratorStreamer(tokenizer)
     model_inputs = tokenizer(formatted_instruction, return_tensors="pt", truncation=True, max_length=2048).to(device)
 
@@ -56,8 +60,8 @@ def generate(instruction, temperature=1, max_new_tokens=256, top_p=1, top_k=0):
             hidden_output += new_text
             continue
         # replace eos token
-        if tokenizer.eos_token in new_text:
-            new_text = new_text.replace(tokenizer.eos_token, "")
+        # if tokenizer.eos_token in new_text:
+        #     new_text = new_text.replace(tokenizer.eos_token, "")
         output += new_text
         yield output
     return output
@@ -66,8 +70,7 @@ def generate(instruction, temperature=1, max_new_tokens=256, top_p=1, top_k=0):
 examples = [
     "How do I create an array in C++ of length 5 which contains all even numbers between 1 and 10?",
     "How can I write a Java function to generate the nth Fibonacci number?",
-    "How can I write a Python function that checks if a given number is a palindrome or not?",
-    "I have a lion in my garden. How can I get rid of it?",
+    "How can I sort a list in Python?",
 ]
 
 
@@ -77,7 +80,7 @@ def process_example(args):
     return x
 
 
-with gr.Blocks(theme=theme) as demo:
+with gr.Blocks(theme=theme, analytics_enabled=False) as demo:
     with gr.Column():
         gr.Markdown(
             """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
@@ -111,7 +114,7 @@ with gr.Blocks(theme=theme) as demo:
             with gr.Column(scale=1):
                 temperature = gr.Slider(
                     label="Temperature",
-                    value=1.0,
+                    value=0.7,
                     minimum=0.0,
                     maximum=2.0,
                     step=0.1,
@@ -120,25 +123,25 @@ with gr.Blocks(theme=theme) as demo:
                 )
                 max_new_tokens = gr.Slider(
                     label="Max new tokens",
-                    value=256,
+                    value=64,
                     minimum=0,
                     maximum=2048,
-                    step=5,
+                    step=4,
                     interactive=True,
                     info="The maximum numbers of new tokens",
                 )
                 top_p = gr.Slider(
                     label="Top-p (nucleus sampling)",
-                    value=1.0,
+                    value=0.95,
                     minimum=0.0,
                     maximum=1,
                     step=0.05,
                     interactive=True,
-                    info="Higher values sample fewer low-probability tokens",
+                    info="Higher values sample more low-probability tokens",
                 )
                 top_k = gr.Slider(
                     label="Top-k",
-                    value=0,
+                    value=40,
                     minimum=0,
                     maximum=100,
                     step=2,
@@ -150,4 +153,4 @@ with gr.Blocks(theme=theme) as demo:
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
 
 demo.queue(concurrency_count=1)
-demo.launch(enable_queue=True)
+demo.launch(enable_queue=True, share=True)
