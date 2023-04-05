@@ -4,7 +4,7 @@ from threading import Thread
 import gradio as gr
 import torch
 from transformers import (AutoModelForCausalLM, AutoTokenizer,
-                          GenerationConfig, TextIteratorStreamer)
+                          TextIteratorStreamer)
 
 theme = gr.themes.Monochrome(
     primary_hue="indigo",
@@ -82,7 +82,7 @@ with gr.Blocks(theme=theme) as demo:
         gr.Markdown(
             """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
 
-            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of programming questions and answers from [Stack Overflow](https://stackoverflow.com) using Reinforcement Learning from Human Feedback (RLHF) with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our blog post [ADD LINK].
+            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of programming questions and answers from [Stack Overflow](https://stackoverflow.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our blog post [ADD LINK].
 
             Type in the box below and click the button to generate answers to your most pressing coding questions 🔥!
       """
@@ -149,5 +149,5 @@ with gr.Blocks(theme=theme) as demo:
     submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
 
-demo.queue()
-demo.launch()
+demo.queue(concurrency_count=1)
+demo.launch(enable_queue=True)
