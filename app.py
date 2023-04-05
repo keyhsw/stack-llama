@@ -4,7 +4,9 @@ from threading import Thread
 import gradio as gr
 import torch
 from transformers import (AutoModelForCausalLM, AutoTokenizer,
-                          TextIteratorStreamer)
+                          TextIteratorStreamer, set_seed)
+from huggingface_hub import Repository
+import json
 
 theme = gr.themes.Monochrome(
     primary_hue="indigo",
@@ -15,6 +17,10 @@ theme = gr.themes.Monochrome(
 )
 HF_TOKEN = os.environ.get("HF_TOKEN", None)
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+if HF_TOKEN:
+    repo = Repository(
+        local_dir="data", clone_from="trl-lib/stack-llama-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
+    )
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -31,8 +37,15 @@ tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=HF_TOKEN)
 
 PROMPT_TEMPLATE = """Question: {prompt}\n\nAnswer:"""
 
+def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
+    with open(os.path.join("data", "prompts.jsonl"), "a") as f:
+        json.dump({"inputs": inputs, "outputs": outputs, "generate_kwargs": generate_kwargs}, f, ensure_ascii=False)
+        f.write("\n")
+        commit_url = repo.push_to_hub()
+
 
 def generate(instruction, temperature=0.8, max_new_tokens=128, top_p=0.95, top_k=40):
+    set_seed(42)
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
 
     temperature = float(temperature)
@@ -64,13 +77,18 @@ def generate(instruction, temperature=0.8, max_new_tokens=128, top_p=0.95, top_k
         #     new_text = new_text.replace(tokenizer.eos_token, "")
         output += new_text
         yield output
+    if HF_TOKEN:
+        print("Pushing prompt and completion to the Hub")
+        save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
     return output
 
 
 examples = [
-    "How do I create an array in C++ of length 5 which contains all even numbers between 1 and 10?",
+    "A llama is in my lawn. How do I get rid of him?",
+    "How do I create an array in C++ which contains all even numbers between 1 and 10?",
     "How can I sort a list in Python?",
     "How can I write a Java function to generate the nth Fibonacci number?",
+    "How many helicopters can a llama eat in one sitting?",
 ]
 
 
@@ -85,9 +103,11 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
         gr.Markdown(
             """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
 
-            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of programming questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
+            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
 
-            Type in the box below and click the button to generate answers to your most pressing coding questions 🔥!
+            Type in the box below and click the button to generate answers to your most pressing questions 🔥!
+
+            **Note:** we are collecting your prompts and model completions for research purposes.
       """
         )
         with gr.Row():
@@ -96,12 +116,6 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
                 with gr.Box():
                     gr.Markdown("**Answer**")
                     output = gr.Markdown()
-                # output = gr.Textbox(
-                #     interactive=False,
-                #     lines=8,
-                #     label="Answer",
-                #     placeholder="Here will be the answer to your question",
-                # )
                 submit = gr.Button("Generate", variant="primary")
                 gr.Examples(
                     examples=examples,
@@ -123,7 +137,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
                 )
                 max_new_tokens = gr.Slider(
                     label="Max new tokens",
-                    value=64,
+                    value=128,
                     minimum=0,
                     maximum=2048,
                     step=4,
@@ -153,4 +167,4 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
 
 demo.queue(concurrency_count=1)
-demo.launch(enable_queue=True)#, share=True)
+demo.launch(enable_queue=True, share=True)
