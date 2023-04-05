@@ -44,7 +44,7 @@ def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
         commit_url = repo.push_to_hub()
 
 
-def generate(instruction, temperature=0.8, max_new_tokens=128, top_p=0.95, top_k=40):
+def generate(instruction, temperature=0.9, max_new_tokens=128, top_p=0.95, top_k=100):
     set_seed(42)
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
 
