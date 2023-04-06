@@ -5,7 +5,7 @@ import gradio as gr
 from huggingface_hub import Repository
 from text_generation import Client
 
-HF_TOKEN = os.environ.get("HF_TOKEN", None)
+HF_TOKEN = os.environ.get("TRL_TOKEN", None)
 API_URL = os.environ.get("API_URL")
 
 
