@@ -114,7 +114,14 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
             with gr.Column(scale=3):
                 instruction = gr.Textbox(placeholder="Enter your question here", label="Question", elem_id="q-input")
                 with gr.Box():
-                    gr.Markdown("**Answer**")
+                    with gr.Column(scale=6):
+                        gr.Markdown("**Answer**")
+                    with gr.Column(scale=1)
+                        do_save = gr.Checkbox(
+                            value=True,
+                            label="Store data",
+                            info="You consent to the storage of your prompt and generated text for research and development purposes."
+                        )
                     output = gr.Markdown(elem_id="q-output")
                 submit = gr.Button("Generate", variant="primary")
                 with gr.Group(elem_id="share-btn-container"):
@@ -130,11 +137,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 )
 
             with gr.Column(scale=1):
-                do_save = gr.Checkbox(
-                    value=True,
-                    label="Store data",
-                    info="You consent to the storage of your prompt and generated text for research and development purposes."
-                    )
+                
                 temperature = gr.Slider(
                     label="Temperature",
                     value=0.9,
