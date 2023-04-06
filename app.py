@@ -164,7 +164,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 )
                 repetition_penalty = gr.Slider(
                     label="Repetition penalty",
-                    value=1.0,
+                    value=1.2,
                     minimum=1.0,
                     maximum=2.0,
                     step=0.05,
