@@ -105,11 +105,11 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
             """![](https://huggingface.co/spaces/trl-lib/stack-llama/resolve/main/stackllama_logo.png)
 
 
-            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
+            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback (RLHF) with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
 
             Type in the box below and click the button to generate answers to your most pressing questions!
 
-            ⚠️ **Intended Use**: this app and its [supporting model](https://huggingface.co/trl-lib/llama-7b-se-rl-peft) are provided as educational tools to explain RLFH with the TRL library; not to serve as replacement for human expertise. For more details on the model's limitations in terms of factuality and biases, see the [model card.](https://huggingface.co/trl-lib/llama-7b-se-rl-peft#intended-uses--limitations)
+            ⚠️ **Intended Use**: this app and its [supporting model](https://huggingface.co/trl-lib/llama-7b-se-rl-peft) are provided as educational tools to explain RLHF with the TRL library; not to serve as replacement for human expertise. For more details on the model's limitations in terms of factuality and biases, see the [model card.](https://huggingface.co/trl-lib/llama-7b-se-rl-peft#intended-uses--limitations)
             
             ⚠️ **Data Collection**: by default, we are collecting the prompts entered in this app to further improve and evaluate the model. Do not share any personal or sensitive information while using the app! You can opt out of this data collection by removing the checkbox below:
       """
