@@ -109,7 +109,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
 
             Type in the box below and click the button to generate answers to your most pressing questions!
 
-            ⚠️ **Factuality**:  information provided by the model can be non factual and this an educational model to explain RLFH with the TRL library.
+            ⚠️ **Intended Use**: this app and its [supporting model](https://huggingface.co/trl-lib/llama-7b-se-rl-peft) are provided as educational tools to explain RLFH with the TRL library; not to serve as replacement for human expertise. For more details on the model's limitations in terms of factuality and biases, see the [model card.](https://huggingface.co/trl-lib/llama-7b-se-rl-peft#intended-uses--limitations)
             
             ⚠️ **Data Collection**: by default, we are collecting the prompts entered in this app to further improve and evaluate the model. Do not share any personal or sensitive information while using the app! You can opt out of this data collection by removing the checkbox below:
       """
@@ -119,7 +119,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 do_save = gr.Checkbox(
                         value=True,
                         label="Store data",
-                        info="You consent to the storage of your prompt and generated text for research and development purposes.")
+                        info="You agree to the storage of your prompt and generated text for research and development purposes:")
                 instruction = gr.Textbox(placeholder="Enter your question here", label="Question", elem_id="q-input")
 
                 
