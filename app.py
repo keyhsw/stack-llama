@@ -20,6 +20,7 @@ if HF_TOKEN:
     repo = Repository(
         local_dir="data", clone_from="trl-lib/stack-llama-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
     )
+    repo.git_pull()
 
 client = Client(
     API_URL,
