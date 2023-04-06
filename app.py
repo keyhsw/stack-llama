@@ -173,7 +173,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 )
 
     submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, repetition_penalty, do_save], outputs=[output])
-    instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
+    instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, repetition_penalty], outputs=[output])
     share_button.click(None, [], [], _js=share_js)
 
 demo.queue(concurrency_count=16).launch(debug=True)
