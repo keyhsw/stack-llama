@@ -153,7 +153,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 )
                 max_new_tokens = gr.Slider(
                     label="Max new tokens",
-                    value=128,
+                    value=256,
                     minimum=0,
                     maximum=512,
                     step=4,
