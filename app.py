@@ -116,7 +116,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 with gr.Box():
                     with gr.Column(scale=6):
                         gr.Markdown("**Answer**")
-                    with gr.Column(scale=1)
+                    with gr.Column(scale=1):
                         do_save = gr.Checkbox(
                             value=True,
                             label="Store data",
