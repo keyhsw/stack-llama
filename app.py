@@ -50,6 +50,7 @@ def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k
         do_sample=True,
         truncate=999,
         seed=42,
+        stop_sequences=["</s>"],
     )
 
     stream = client.generate_stream(
