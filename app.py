@@ -107,6 +107,10 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                     gr.Markdown("**Answer**")
                     output = gr.Markdown(elem_id="q-output")
                 submit = gr.Button("Generate", variant="primary")
+                with gr.Group(elem_id="share-btn-container"):
+                    community_icon = gr.HTML(community_icon_html, visible=True)
+                    loading_icon = gr.HTML(loading_icon_html, visible=True)
+                    share_button = gr.Button("Share to community", elem_id="share-btn", visible=True)
                 gr.Examples(
                     examples=examples,
                     inputs=[instruction],
@@ -114,11 +118,6 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                     fn=process_example,
                     outputs=[output],
                 )
-
-                with gr.Group(elem_id="share-btn-container"):
-                    community_icon = gr.HTML(community_icon_html, visible=True)
-                    loading_icon = gr.HTML(loading_icon_html, visible=True)
-                    share_button = gr.Button("Share to community", elem_id="share-btn", visible=True)
 
             with gr.Column(scale=1):
                 temperature = gr.Slider(
