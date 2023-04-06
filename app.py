@@ -77,7 +77,7 @@ def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k
         try:
             print("Pushing prompt and completion to the Hub")
             save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
-        except Exception,e:
+        except Exception as e:
             print(e)
             
     return output
