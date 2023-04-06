@@ -67,12 +67,15 @@ ${inputTxt}
 
 ${outputTxt}`;
 
-    const params = new URLSearchParams({
+    const params = {
         title: titleTxt,
         description: descriptionMd,
-    });
+    };
 
-	const paramsStr = params.toString();
+    const paramsStr = Object.entries(params)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+        .join('&');
+
 	window.open(`https://huggingface.co/spaces/trl-lib/stack-llama/discussions/new?${paramsStr}`, '_blank');
 
     shareBtnEl.style.removeProperty('pointer-events');
