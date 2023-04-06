@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import gradio as gr
 from huggingface_hub import Repository
@@ -19,8 +20,13 @@ theme = gr.themes.Monochrome(
     font=[gr.themes.GoogleFont("Open Sans"), "ui-sans-serif", "system-ui", "sans-serif"],
 )
 if HF_TOKEN:
+    try:
+        shutil.rmtree("./data/")
+    except:
+        pass
+
     repo = Repository(
-        local_dir="data", clone_from="trl-lib/stack-llama-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
+        local_dir="./data/", clone_from="trl-lib/stack-llama-prompts", use_auth_token=HF_TOKEN, repo_type="dataset"
     )
     repo.git_pull()
 
@@ -39,10 +45,12 @@ def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
         commit_url = repo.push_to_hub()
 
 
-def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k=100):
+def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k=100, do_save=True):
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
 
     temperature = float(temperature)
+    if temperature < 1e-2:
+        temperature = 1e-2
     top_p = float(top_p)
 
     generate_kwargs = dict(
@@ -65,10 +73,13 @@ def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k
     for response in stream:
         output += response.token.text
         yield output
-    if HF_TOKEN:
-        print("Pushing prompt and completion to the Hub")
-        save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
-
+    if HF_TOKEN and do_save:
+        try:
+            print("Pushing prompt and completion to the Hub")
+            save_inputs_and_outputs(formatted_instruction, output, generate_kwargs)
+        except Exception,e:
+            print(e)
+            
     return output
 
 
@@ -91,15 +102,15 @@ css = ".generating {visibility: hidden}" + share_btn_css
 with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
     with gr.Column():
         gr.Markdown(
-            """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
+            """![](https://huggingface.co/spaces/trl-lib/stack-llama/resolve/main/stackllama_logo.png)
+
 
             StackLLaMa is a 7 billion parameter language model that has been trained on pairs of questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
 
-            Type in the box below and click the button to generate answers to your most pressing questions 🔥!
-
-            **Note:** we are collecting your prompts and model completions for research purposes.
+            Type in the box below and click the button to generate answers to your most pressing questions!
       """
         )
+        do_save = gr.Checkbox(value=True, label="You consent to the storage of your prompt and generated text for research and development purposes.")
         with gr.Row():
             with gr.Column(scale=3):
                 instruction = gr.Textbox(placeholder="Enter your question here", label="Question", elem_id="q-input")
@@ -122,8 +133,8 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
             with gr.Column(scale=1):
                 temperature = gr.Slider(
                     label="Temperature",
-                    value=0.8,
-                    minimum=0.01,
+                    value=0.9,
+                    minimum=0.0,
                     maximum=2.0,
                     step=0.1,
                     interactive=True,
@@ -131,16 +142,16 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 )
                 max_new_tokens = gr.Slider(
                     label="Max new tokens",
-                    value=256,
+                    value=128,
                     minimum=0,
-                    maximum=2048,
+                    maximum=512,
                     step=4,
                     interactive=True,
                     info="The maximum numbers of new tokens",
                 )
                 top_p = gr.Slider(
                     label="Top-p (nucleus sampling)",
-                    value=0.95,
+                    value=0.90,
                     minimum=0.0,
                     maximum=1,
                     step=0.05,
@@ -149,7 +160,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 )
                 top_k = gr.Slider(
                     label="Top-k",
-                    value=40,
+                    value=50,
                     minimum=0,
                     maximum=100,
                     step=2,
@@ -157,7 +168,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                     info="Sample from top-k tokens",
                 )
 
-    submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
+    submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k, do_save], outputs=[output])
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
     share_button.click(None, [], [], _js=share_js)
 
