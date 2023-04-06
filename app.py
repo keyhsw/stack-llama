@@ -108,18 +108,21 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
             StackLLaMa is a 7 billion parameter language model that has been trained on pairs of questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
 
             Type in the box below and click the button to generate answers to your most pressing questions!
+
+            ⚠️ **Factuality**:  information provided by the model can be non factual and this an educational model to explain RLFH with the TRL library.
+            
+            ⚠️ **Data Collection**: by default, we are collecting the prompts entered in this app to further improve and evaluate the model. Do not share any personal or sensitive information while using the app! You can opt out of this data collection by removing the checkbox below:
       """
         )
         with gr.Row():
             with gr.Column(scale=3):
-                with gr.Column(scale=6):
-                    instruction = gr.Textbox(placeholder="Enter your question here", label="Question", elem_id="q-input")
-                with gr.Column(scale=1):
-                    do_save = gr.Checkbox(
+                do_save = gr.Checkbox(
                         value=True,
                         label="Store data",
-                        info="You consent to the storage of your prompt and generated text for research and development purposes."
-                    )
+                        info="You consent to the storage of your prompt and generated text for research and development purposes.")
+                instruction = gr.Textbox(placeholder="Enter your question here", label="Question", elem_id="q-input")
+
+                
                 with gr.Box():
                     gr.Markdown("**Answer**")
                     output = gr.Markdown(elem_id="q-output")
