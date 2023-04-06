@@ -5,6 +5,8 @@ import gradio as gr
 from huggingface_hub import Repository
 from text_generation import Client
 
+from share_btn import community_icon_html, loading_icon_html, share_js, share_btn_css
+
 HF_TOKEN = os.environ.get("TRL_TOKEN", None)
 API_URL = os.environ.get("API_URL")
 
@@ -84,8 +86,9 @@ def process_example(args):
         pass
     return x
 
+css = ".generating {visibility: hidden}" + share_btn_css
 
-with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibility: hidden}") as demo:
+with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
     with gr.Column():
         gr.Markdown(
             """<h1><center>🦙🦙🦙 StackLLaMa 🦙🦙🦙</center></h1>
@@ -99,10 +102,10 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
         )
         with gr.Row():
             with gr.Column(scale=3):
-                instruction = gr.Textbox(placeholder="Enter your question here", label="Question")
+                instruction = gr.Textbox(placeholder="Enter your question here", label="Question", elem_id="q-input")
                 with gr.Box():
                     gr.Markdown("**Answer**")
-                    output = gr.Markdown()
+                    output = gr.Markdown(elem_id="q-output")
                 submit = gr.Button("Generate", variant="primary")
                 gr.Examples(
                     examples=examples,
@@ -111,6 +114,11 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
                     fn=process_example,
                     outputs=[output],
                 )
+
+                with gr.Group(elem_id="share-btn-container"):
+                    community_icon = gr.HTML(community_icon_html, visible=True)
+                    loading_icon = gr.HTML(loading_icon_html, visible=True)
+                    share_button = gr.Button("Share to community", elem_id="share-btn", visible=True)
 
             with gr.Column(scale=1):
                 temperature = gr.Slider(
@@ -152,5 +160,6 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=".generating {visibilit
 
     submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
+    share_button.click(None, [], [], _js=share_js)
 
 demo.queue(concurrency_count=16).launch(debug=True)
