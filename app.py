@@ -45,7 +45,7 @@ def save_inputs_and_outputs(inputs, outputs, generate_kwargs):
         commit_url = repo.push_to_hub()
 
 
-def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k=100, do_save=True):
+def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, repetition_penalty=1.0,  do_save=True):
     formatted_instruction = PROMPT_TEMPLATE.format(prompt=instruction)
 
     temperature = float(temperature)
@@ -57,7 +57,7 @@ def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, top_k
         temperature=temperature,
         max_new_tokens=max_new_tokens,
         top_p=top_p,
-        top_k=top_k,
+        repetition_penalty=repetition_penalty,
         do_sample=True,
         truncate=999,
         seed=42,
@@ -162,17 +162,17 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                     interactive=True,
                     info="Higher values sample more low-probability tokens",
                 )
-                top_k = gr.Slider(
-                    label="Top-k",
-                    value=50,
-                    minimum=0,
-                    maximum=100,
-                    step=2,
+                repetition_penalty = gr.Slider(
+                    label="Repetition penalty",
+                    value=1.0,
+                    minimum=1.0,
+                    maximum=2.0,
+                    step=0.05,
                     interactive=True,
-                    info="Sample from top-k tokens",
+                    info="Penalize repeated tokens",
                 )
 
-    submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k, do_save], outputs=[output])
+    submit.click(generate, inputs=[instruction, temperature, max_new_tokens, top_p, repetition_penalty, do_save], outputs=[output])
     instruction.submit(generate, inputs=[instruction, temperature, max_new_tokens, top_p, top_k], outputs=[output])
     share_button.click(None, [], [], _js=share_js)
 
