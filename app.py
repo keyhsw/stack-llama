@@ -85,10 +85,11 @@ def generate(instruction, temperature=0.9, max_new_tokens=256, top_p=0.95, repet
 
 examples = [
     "A llama is in my lawn. How do I get rid of him?",
-    "How do I create an array in C++ which contains all even numbers between 1 and 10?",
+    "What are the various algorithms to sort a list?",
     "How can I sort a list in Python?",
+    "How do I ask a question in StackOverflow?",
+    "How to beat a Hitmonlee in a Pokemon battle?",
     "How can I write a Java function to generate the nth Fibonacci number?",
-    "How many helicopters can a llama eat in one sitting?",
 ]
 
 
@@ -134,7 +135,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
                 gr.Examples(
                     examples=examples,
                     inputs=[instruction],
-                    cache_examples=True,
+                    cache_examples=False,
                     fn=process_example,
                     outputs=[output],
                 )
