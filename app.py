@@ -106,7 +106,7 @@ with gr.Blocks(theme=theme, analytics_enabled=False, css=css) as demo:
             """![](https://huggingface.co/spaces/trl-lib/stack-llama/resolve/main/stackllama_logo.png)
 
 
-            StackLLaMa is a 7 billion parameter language model that has been trained on pairs of questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback (RLHF) with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
+            StackLLaMa is a 7 billion parameter language model based on [Meta's LLaMA model](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/) that has been trained on pairs of questions and answers from [Stack Exchange](https://stackexchange.com) using Reinforcement Learning from Human Feedback (RLHF) with the [TRL library](https://github.com/lvwerra/trl). For more details, check out our [blog post](https://huggingface.co/blog/stackllama).
 
             Type in the box below and click the button to generate answers to your most pressing questions!
 
