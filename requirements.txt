@@ -6,3 +6,4 @@ text-generation==0.4.1
 # accelerate>=0.16.0
 # bitsandbytes
 # sentencepiece
+gradio==3.23.0
